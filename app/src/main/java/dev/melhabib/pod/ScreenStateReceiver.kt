@@ -5,23 +5,20 @@ import android.content.Context
 import android.content.Intent
 
 /**
- * Screen-off -> show the AOD overlay. Screen-on / user-present -> dismiss
- * it and cancel the per-minute tick alarm (no point redrawing a clock
- * nobody can see). Gated on Prefs.isEnabled() -- the manual toggle is the
- * only on/off switch in this design, there's no scheduled window.
+ * Screen-off -> show the AOD overlay. Gated on Prefs.isEnabled() -- the
+ * manual toggle is the only on/off switch in this design, there's no
+ * scheduled window.
+ *
+ * The per-minute tick alarm is owned by AodOverlayActivity (armed in
+ * onResume, cancelled in onPause), not cancelled here on SCREEN_ON: the
+ * overlay's own turnScreenOn fires SCREEN_ON right after onResume arms the
+ * alarm, which used to cancel it immediately.
  */
 class ScreenStateReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        when (intent.action) {
-            Intent.ACTION_SCREEN_OFF -> {
-                if (Prefs.isEnabled(context)) {
-                    AodOverlayActivity.show(context)
-                }
-            }
-            Intent.ACTION_SCREEN_ON, Intent.ACTION_USER_PRESENT -> {
-                ClockTickReceiver.cancel(context)
-            }
+        if (intent.action == Intent.ACTION_SCREEN_OFF && Prefs.isEnabled(context)) {
+            AodOverlayActivity.show(context)
         }
     }
 }

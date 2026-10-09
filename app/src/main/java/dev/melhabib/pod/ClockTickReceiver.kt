@@ -24,6 +24,10 @@ class ClockTickReceiver : BroadcastReceiver() {
         if (intent.action == ACTION_TICK) {
             // Exact alarms are one-shot; re-arm for the next minute boundary.
             schedule(context)
+            // The alarm's PendingIntent targets this receiver explicitly, so
+            // AodOverlayActivity's runtime-registered receiver never sees it.
+            // Re-broadcast within our own package so the overlay can drift.
+            context.sendBroadcast(Intent(ACTION_TICK).setPackage(context.packageName))
         }
     }
 

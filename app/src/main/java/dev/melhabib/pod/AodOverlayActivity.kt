@@ -77,6 +77,9 @@ class AodOverlayActivity : AppCompatActivity(), SensorEventListener {
     override fun onPause() {
         sensorManager.unregisterListener(this)
         unregisterReceiver(tickReceiver)
+        // The tick only exists to drift this face, so it runs exactly while
+        // the overlay is resumed (no point redrawing a clock nobody can see).
+        ClockTickReceiver.cancel(this)
         super.onPause()
     }
 
