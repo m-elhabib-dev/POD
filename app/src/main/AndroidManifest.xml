@@ -33,7 +33,7 @@
         <!--
             Shown over the lock screen when the screen turns off, per the
             design doc (/mnt/project-files/design/aod-design.md). Not a
-            privileged system AOD component -- this is a normal activity
+            privileged system AOD component; this is a normal activity
             with showWhenLocked + turnScreenOn, which is the only option
             available without root.
         -->
