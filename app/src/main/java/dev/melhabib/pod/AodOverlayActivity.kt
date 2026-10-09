@@ -130,8 +130,10 @@ class AodOverlayActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent) {
         when (event.sensor.type) {
             Sensor.TYPE_PROXIMITY -> {
-                // Any non-zero reading means something is close (in a pocket/bag).
-                suppressedByProximity = event.values[0] > 0f
+                // values[0] is distance in cm; binary sensors report
+                // maximumRange for "far" and something lower (usually 0)
+                // for "near" (in a pocket/bag).
+                suppressedByProximity = event.values[0] < event.sensor.maximumRange
             }
             Sensor.TYPE_ACCELEROMETER -> {
                 // Face-down: z-axis gravity component points away from the
