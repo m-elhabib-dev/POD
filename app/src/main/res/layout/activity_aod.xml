@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/aod_background">
+
+    <!--
+        drift_container is the view we nudge a few px every minute for
+        burn-in protection (see AodOverlayActivity.applyBurnInDrift). It
+        wraps the clock face so the whole face moves together, never
+        clipping at the screen edge.
+    -->
+    <LinearLayout
+        android:id="@+id/drift_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextClock
+            android:id="@+id/clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="h:mm"
+            android:format24Hour="HH:mm"
+            android:textColor="@color/aod_foreground"
+            android:textSize="96sp"
+            android:fontFamily="sans-serif-light" />
+
+        <TextClock
+            android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:format12Hour="EEE, MMM d"
+            android:format24Hour="EEE, MMM d"
+            android:textColor="@color/aod_foreground_dim"
+            android:textSize="22sp"
+            android:fontFamily="sans-serif" />
+
+    </LinearLayout>
+
+</FrameLayout>

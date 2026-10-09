@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- True black background: on OLED this means those pixels are off. -->
+    <color name="aod_background">#FF000000</color>
+    <color name="aod_foreground">#FFFFFFFF</color>
+    <color name="aod_foreground_dim">#B3FFFFFF</color>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">POD</string>
+    <string name="toggle_label">Always-on display</string>
+    <string name="toggle_summary_on">Running — screen-off will show the clock, unless in your pocket or face-down.</string>
+    <string name="toggle_summary_off">Off — screen-off behaves normally.</string>
+    <string name="notification_channel_name">Always-on display</string>
+    <string name="notification_text">POD is watching for screen-off</string>
+</resources>
