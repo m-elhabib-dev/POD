@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- True black background: on OLED this means those pixels are off. -->
-    <color name="aod_background">#FF000000</color>
-    <color name="aod_foreground">#FFFFFFFF</color>
-    <color name="aod_foreground_dim">#B3FFFFFF</color>
+    <!--
+        Catppuccin Mocha. Not pure black anymore (base is #1E1E2E), which
+        is a deliberate burn-in/battery trade-off -- see aod-design.md
+        "Visual style" for why that's acceptable now that this only runs
+        while charging.
+    -->
+    <color name="mocha_base">#FF1E1E2E</color>
+    <color name="mocha_mantle">#FF181825</color>
+    <color name="mocha_crust">#FF11111B</color>
+    <color name="mocha_surface0">#FF313244</color>
+    <color name="mocha_surface1">#FF45475A</color>
+    <color name="mocha_text">#FFCDD6F4</color>
+    <color name="mocha_subtext0">#FFA6ADC8</color>
+    <color name="mocha_mauve">#FFCBA6F7</color>
+    <color name="mocha_yellow">#FFF9E2AF</color>
+
+    <color name="aod_background">@color/mocha_base</color>
+    <color name="aod_foreground">@color/mocha_text</color>
+    <color name="aod_foreground_dim">@color/mocha_subtext0</color>
 </resources>

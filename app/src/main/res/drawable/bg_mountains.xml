@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layered mountain silhouette, landscape aspect, Catppuccin Mocha only.
+    Three receding ridges (far to near = lighter to darker) plus a dim
+    moon accent. Drawn flat/simple on purpose -- it sits behind a clock
+    for hours at a time, so it needs to read instantly, not hold detail.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="432dp"
+    android:height="200dp"
+    android:viewportWidth="432"
+    android:viewportHeight="200">
+
+    <path android:pathData="M0,0 L432,0 L432,200 L0,200 Z" android:fillColor="#FF1E1E2E" />
+
+    <!-- moon -->
+    <path
+        android:fillColor="#FFF9E2AF"
+        android:fillAlpha="0.55"
+        android:pathData="M352,40 C362,40 370,48 370,58 C370,68 362,76 352,76 C342,76 334,68 334,58 C334,48 342,40 352,40 Z" />
+
+    <!-- far ridge -->
+    <path
+        android:fillColor="#FF313244"
+        android:pathData="M0,130 L50,95 L100,120 L150,85 L210,118 L260,90 L320,122 L380,98 L432,128 L432,200 L0,200 Z" />
+
+    <!-- mid ridge -->
+    <path
+        android:fillColor="#FF181825"
+        android:pathData="M0,160 L60,120 L120,150 L185,110 L250,155 L310,118 L370,152 L432,130 L432,200 L0,200 Z" />
+
+    <!-- near ridge -->
+    <path
+        android:fillColor="#FF11111B"
+        android:pathData="M0,190 L70,150 L140,182 L200,145 L270,185 L330,150 L400,183 L432,165 L432,200 L0,200 Z" />
+</vector>

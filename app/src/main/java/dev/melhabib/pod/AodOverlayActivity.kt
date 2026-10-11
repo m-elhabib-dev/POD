@@ -1,15 +1,13 @@
 package dev.melhabib.pod
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -17,29 +15,34 @@ import dev.melhabib.pod.databinding.ActivityAodBinding
 import kotlin.random.Random
 
 /**
- * The AOD face itself. Shown over the lock screen on screen-off
- * (ScreenStateReceiver). Per aod-design.md:
- *  - suppressed (hidden) while in a pocket (proximity) or face-down
- *    (accelerometer), resumes when clear -- continuous, not one-shot
+ * The AOD face itself. Shown over the lock screen on screen-off while
+ * charging (ScreenStateReceiver / ChargeReceiver). Per aod-design.md:
+ *  - requires charging -- no pocket/face-down sensor suppression anymore,
+ *    a phone on a charger is assumed to be sitting on a dock, not in a
+ *    pocket
+ *  - dismisses itself the moment charging stops (ACTION_POWER_DISCONNECTED)
  *  - brightness mirrors the device's current system brightness, no
  *    independent ambient-light sampling
- *  - small periodic pixel drift for burn-in protection
+ *  - small periodic drift of the whole scene (background + clock) for
+ *    burn-in protection
  *  - any touch dismisses back to the real lock screen
  */
-class AodOverlayActivity : AppCompatActivity(), SensorEventListener {
+class AodOverlayActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAodBinding
-    private lateinit var sensorManager: SensorManager
-    private var proximitySensor: Sensor? = null
-    private var accelerometer: Sensor? = null
 
-    private var suppressedByProximity = false
-    private var suppressedByOrientation = false
-
-    private val tickReceiver = object : android.content.BroadcastReceiver() {
+    private val tickReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == ClockTickReceiver.ACTION_TICK) {
                 applyBurnInDrift()
+            }
+        }
+    }
+
+    private val powerDisconnectedReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_POWER_DISCONNECTED) {
+                finish()
             }
         }
     }
@@ -56,27 +59,22 @@ class AodOverlayActivity : AppCompatActivity(), SensorEventListener {
             finish()
             true
         }
-
-        sensorManager = getSystemService(SensorManager::class.java)
-        proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     }
 
     override fun onResume() {
         super.onResume()
         applySystemBrightness()
-        proximitySensor?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
-        accelerometer?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
         ContextCompat.registerReceiver(
             this, tickReceiver, IntentFilter(ClockTickReceiver.ACTION_TICK),
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
+        registerReceiver(powerDisconnectedReceiver, IntentFilter(Intent.ACTION_POWER_DISCONNECTED))
         ClockTickReceiver.schedule(this)
     }
 
     override fun onPause() {
-        sensorManager.unregisterListener(this)
         unregisterReceiver(tickReceiver)
+        unregisterReceiver(powerDisconnectedReceiver)
         // The tick only exists to drift this face, so it runs exactly while
         // the overlay is resumed (no point redrawing a clock nobody can see).
         ClockTickReceiver.cancel(this)
@@ -113,11 +111,14 @@ class AodOverlayActivity : AppCompatActivity(), SensorEventListener {
         window.attributes = attrs
     }
 
+    /**
+     * Shifts the WHOLE scene (background + clock, see drift_container in
+     * activity_aod.xml), not just the clock text -- the mountains
+     * background is now the dominant lit area, so drifting only the
+     * clock would leave most pixels static. drift_container is scaled up
+     * 1.1x in the layout so this never exposes a blank edge.
+     */
     private fun applyBurnInDrift() {
-        // Small bounded random walk, well within the bezel margin, so the
-        // shift is invisible in normal use but moves the lit pixels
-        // enough over hours to avoid fixed burn-in. Re-centers via the
-        // coerceIn bound rather than drifting unbounded.
         val maxOffsetPx = resources.displayMetrics.density * DRIFT_MAX_DP
         val newX = (binding.driftContainer.translationX + Random.nextInt(-3, 4))
             .coerceIn(-maxOffsetPx, maxOffsetPx)
@@ -127,34 +128,20 @@ class AodOverlayActivity : AppCompatActivity(), SensorEventListener {
         binding.driftContainer.translationY = newY
     }
 
-    override fun onSensorChanged(event: SensorEvent) {
-        when (event.sensor.type) {
-            Sensor.TYPE_PROXIMITY -> {
-                // values[0] is distance in cm; binary sensors report
-                // maximumRange for "far" and something lower (usually 0)
-                // for "near" (in a pocket/bag).
-                suppressedByProximity = event.values[0] < event.sensor.maximumRange
-            }
-            Sensor.TYPE_ACCELEROMETER -> {
-                // Face-down: z-axis gravity component points away from the
-                // screen, i.e. strongly negative.
-                suppressedByOrientation = event.values[2] < -7f
-            }
-        }
-        binding.root.visibility =
-            if (suppressedByProximity || suppressedByOrientation) {
-                android.view.View.INVISIBLE
-            } else {
-                android.view.View.VISIBLE
-            }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) = Unit
-
     companion object {
+        private const val TAG = "AodOverlayActivity"
         private const val DRIFT_MAX_DP = 10f
 
         fun show(context: Context) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+                // Without this, Android's background-activity-start restriction
+                // blocks us from launching from a receiver/service (see the
+                // A-vs-B decision in the project thread). MainActivity is
+                // responsible for asking the user to grant it; if they haven't,
+                // there's nothing to show.
+                Log.w(TAG, "Skipping AOD overlay: SYSTEM_ALERT_WINDOW not granted")
+                return
+            }
             val intent = Intent(context, AodOverlayActivity::class.java)
                 .addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or

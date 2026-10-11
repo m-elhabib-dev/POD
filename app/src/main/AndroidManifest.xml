@@ -9,9 +9,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-
-    <uses-feature android:name="android.hardware.sensor.proximity" android:required="false" />
-    <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
+    <!--
+        Required to launch AodOverlayActivity from the background
+        (ChargeReceiver/ScreenStateReceiver); see the A-vs-B decision in
+        the project thread. Requested at runtime via Settings in
+        MainActivity -- it's a one-time Settings grant, not auto-granted.
+    -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:allowBackup="true"
@@ -23,6 +27,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.Pod">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,15 +36,17 @@
         </activity>
 
         <!--
-            Shown over the lock screen when the screen turns off, per the
-            design doc (/mnt/project-files/design/aod-design.md). Not a
-            privileged system AOD component; this is a normal activity
-            with showWhenLocked + turnScreenOn, which is the only option
+            Shown over the lock screen when the screen turns off while
+            charging, per the design doc
+            (/mnt/project-files/design/aod-design.md). Not a privileged
+            system AOD component; this is a normal activity with
+            showWhenLocked + turnScreenOn, which is the only option
             available without root.
         -->
         <activity
             android:name=".AodOverlayActivity"
             android:exported="false"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.Pod.Aod"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
@@ -67,6 +74,20 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+            ACTION_POWER_CONNECTED/DISCONNECTED ARE delivered to
+            manifest-declared receivers (unlike SCREEN_ON/OFF), so unlike
+            ScreenStateReceiver this one doesn't need the foreground
+            service to stay registered.
+        -->
+        <receiver
+            android:name=".ChargeReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
             </intent-filter>
         </receiver>
 

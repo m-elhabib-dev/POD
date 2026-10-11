@@ -9,14 +9,22 @@ activation/battery logic.
 
 ## What it does
 
-- Clock + date, desk-clock styling, true-black background (OLED).
-- Shows on screen-off, suppressed while in a pocket (proximity) or
-  face-down (accelerometer), resumes when clear.
-- Runs continuously — no time-of-day window. A manual on/off switch in
-  the app (not a schedule) is how you turn it off, e.g. overnight.
-- Minute-level redraw via `AlarmManager`, not a wake loop.
-- Small periodic pixel drift for OLED burn-in protection.
+- Digital clock (with seconds) + date, mountains vector background,
+  Catppuccin Mocha palette, landscape only.
+- Shows on screen-off, **only while charging** — dismisses itself the
+  instant charging stops. No sensors, no time-of-day window.
+- A manual on/off switch in the app (not a schedule) is the only other
+  way to turn it off.
+- Second-level redraw via `AlarmManager`, not a wake loop. Paid for by
+  the charger, not the battery, since this only runs on AC power.
+- Burn-in drift moves the whole scene (background + clock together), not
+  just the clock text — see the design doc's burn-in trade-off note:
+  moving off true-black and running a static-ish full-screen image for
+  hours increases burn-in risk, which this mitigates but doesn't eliminate.
 - Brightness mirrors the device's current system brightness.
+- Requires "display over other apps" (`SYSTEM_ALERT_WINDOW`) to launch
+  the overlay from the background — the app links you to the Settings
+  page for it if it isn't granted yet.
 
 ## What it is not
 

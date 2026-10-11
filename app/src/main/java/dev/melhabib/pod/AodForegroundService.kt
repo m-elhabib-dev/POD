@@ -19,10 +19,10 @@ import android.os.IBinder
  * per-minute redraw lives in ClockTickReceiver, both driven by broadcasts
  * / alarms rather than a busy loop.
  *
- * This runs continuously (no time-of-day window) per Pasha's call to
- * "disable force off" -- see aod-design.md. The only gate on whether the
- * overlay actually shows is Prefs.isEnabled() (the manual toggle) and the
- * proximity/face-down suppression in AodOverlayActivity.
+ * This runs continuously (no time-of-day window) so it can catch
+ * screen-off at any hour; whether the overlay actually shows is gated on
+ * Prefs.isEnabled() (the manual toggle) and on charging state (see
+ * ScreenStateReceiver / ChargeReceiver -- "working in charge only").
  */
 class AodForegroundService : Service() {
 

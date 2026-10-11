@@ -3,8 +3,10 @@ package dev.melhabib.pod
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity() {
             updateSummary(isChecked)
             if (isChecked) {
                 maybeRequestNotificationPermission()
+                maybeRequestOverlayPermission()
                 AodForegroundService.start(this)
             } else {
                 AodForegroundService.stop(this)
@@ -40,6 +43,7 @@ class MainActivity : AppCompatActivity() {
 
         if (toggle.isChecked) {
             maybeRequestNotificationPermission()
+            maybeRequestOverlayPermission()
             AodForegroundService.start(this)
         }
     }
@@ -58,5 +62,23 @@ class MainActivity : AppCompatActivity() {
         if (!granted) {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
+    }
+
+    /**
+     * "Display over other apps" -- required to launch AodOverlayActivity
+     * from the background (ChargeReceiver/ScreenStateReceiver aren't
+     * foreground themselves). See the A-vs-B decision in the project
+     * thread: this is a one-time Settings grant, not a scheduled/runtime
+     * permission, so there's no result callback to handle here -- the
+     * user grants it in Settings and comes back.
+     */
+    private fun maybeRequestOverlayPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+        if (Settings.canDrawOverlays(this)) return
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:$packageName")
+        )
+        startActivity(intent)
     }
 }
