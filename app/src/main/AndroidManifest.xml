@@ -13,7 +13,7 @@
         Required to launch AodOverlayActivity from the background
         (ChargeReceiver/ScreenStateReceiver); see the A-vs-B decision in
         the project thread. Requested at runtime via Settings in
-        MainActivity -- it's a one-time Settings grant, not auto-granted.
+        MainActivity — it's a one-time Settings grant, not auto-granted.
     -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 

@@ -2,7 +2,7 @@
 <resources>
     <!--
         Catppuccin Mocha. Not pure black anymore (base is #1E1E2E), which
-        is a deliberate burn-in/battery trade-off -- see aod-design.md
+        is a deliberate burn-in/battery trade-off — see aod-design.md
         "Visual style" for why that's acceptable now that this only runs
         while charging.
     -->

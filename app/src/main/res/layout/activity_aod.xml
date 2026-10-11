@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Landscape only (see AndroidManifest.xml). drift_container holds BOTH
-    the mountains background and the clock/date -- the whole scene nudges
+    the mountains background and the clock/date — the whole scene nudges
     together for burn-in protection, not just the clock text, since the
     background is now the dominant lit area on screen (see aod-design.md
     "Visual style" trade-off on moving off true-black).

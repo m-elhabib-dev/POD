@@ -2,7 +2,7 @@
 <!--
     Layered mountain silhouette, landscape aspect, Catppuccin Mocha only.
     Three receding ridges (far to near = lighter to darker) plus a dim
-    moon accent. Drawn flat/simple on purpose -- it sits behind a clock
+    moon accent. Drawn flat/simple on purpose — it sits behind a clock
     for hours at a time, so it needs to read instantly, not hold detail.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
