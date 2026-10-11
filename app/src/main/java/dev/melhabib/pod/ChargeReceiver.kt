@@ -1,5 +1,6 @@
 package dev.melhabib.pod
 
+import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,11 +12,17 @@ import android.os.PowerManager
  * suppression entirely -- a phone on a charger is assumed to be sitting
  * on a dock/nightstand, not in a pocket, so the sensors were redundant.
  *
- * ACTION_POWER_CONNECTED/DISCONNECTED (unlike SCREEN_ON/OFF) ARE
- * delivered to manifest-declared receivers, so this one is static.
- * It only has to handle the "plug in while already locked" case --
- * ScreenStateReceiver's ACTION_SCREEN_OFF handler covers "screen turns
- * off while already charging".
+ * ACTION_POWER_CONNECTED is NOT on Android 8+'s implicit-broadcast
+ * exception list, so a manifest-declared receiver never fires for it.
+ * Like ScreenStateReceiver, this is registered at runtime in
+ * AodForegroundService.onCreate instead.
+ *
+ * Plugging in shows the overlay right away if the phone is locked or the
+ * screen is off. Checking isInteractive alone isn't enough: most phones
+ * (Xperia included) wake the screen on plug-in, so by the time this runs
+ * the screen is usually already on -- but still on the lock screen. If
+ * the phone is unlocked and in use, this leaves it alone;
+ * ScreenStateReceiver picks it up on the next screen-off.
  */
 class ChargeReceiver : BroadcastReceiver() {
 
@@ -24,7 +31,8 @@ class ChargeReceiver : BroadcastReceiver() {
         if (!Prefs.isEnabled(context)) return
 
         val powerManager = context.getSystemService(PowerManager::class.java)
-        if (!powerManager.isInteractive) {
+        val keyguardManager = context.getSystemService(KeyguardManager::class.java)
+        if (!powerManager.isInteractive || keyguardManager.isKeyguardLocked) {
             AodOverlayActivity.show(context)
         }
     }

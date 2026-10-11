@@ -12,12 +12,14 @@ import android.os.Build
 import android.os.IBinder
 
 /**
- * Keeps ScreenStateReceiver registered and the service alive in the
- * background. This does NOT keep the CPU awake by itself -- it is a
- * foreground service so Android doesn't kill it, nothing more. The actual
- * screen-off -> show overlay logic lives in ScreenStateReceiver, and the
- * per-minute redraw lives in ClockTickReceiver, both driven by broadcasts
- * / alarms rather than a busy loop.
+ * Keeps ScreenStateReceiver and ChargeReceiver registered and the service
+ * alive in the background. Neither SCREEN_OFF nor POWER_CONNECTED reaches
+ * a manifest-declared receiver on Android 8+, so this service is what
+ * makes the overlay appear on its own. This does NOT keep the CPU awake
+ * by itself -- it is a foreground service so Android doesn't kill it,
+ * nothing more. The screen-off / plug-in -> show overlay logic lives in
+ * those receivers, and the per-minute redraw lives in ClockTickReceiver,
+ * all driven by broadcasts / alarms rather than a busy loop.
  *
  * This runs continuously (no time-of-day window) so it can catch
  * screen-off at any hour; whether the overlay actually shows is gated on
@@ -27,6 +29,7 @@ import android.os.IBinder
 class AodForegroundService : Service() {
 
     private val screenStateReceiver = ScreenStateReceiver()
+    private val chargeReceiver = ChargeReceiver()
     private var receiverRegistered = false
 
     override fun onCreate() {
@@ -34,6 +37,7 @@ class AodForegroundService : Service() {
         startForeground(NOTIFICATION_ID, buildNotification())
         if (!receiverRegistered) {
             registerReceiver(screenStateReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
+            registerReceiver(chargeReceiver, IntentFilter(Intent.ACTION_POWER_CONNECTED))
             receiverRegistered = true
         }
     }
@@ -46,6 +50,7 @@ class AodForegroundService : Service() {
     override fun onDestroy() {
         if (receiverRegistered) {
             unregisterReceiver(screenStateReceiver)
+            unregisterReceiver(chargeReceiver)
             receiverRegistered = false
         }
         super.onDestroy()

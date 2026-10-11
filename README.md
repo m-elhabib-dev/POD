@@ -13,6 +13,10 @@ activation/battery logic.
   Catppuccin Mocha palette, landscape only.
 - Shows on screen-off, **only while charging** — dismisses itself the
   instant charging stops. No sensors, no time-of-day window.
+- Plugging in the charger shows it right away if the phone is locked or
+  the screen is off (an unlocked phone in use is left alone until the
+  next screen-off). No need to open the app: the service restarts itself
+  after a reboot or an app update.
 - A manual on/off switch in the app (not a schedule) is the only other
   way to turn it off.
 - Second-level redraw via `AlarmManager`, not a wake loop. Paid for by

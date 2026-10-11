@@ -63,31 +63,23 @@
         </service>
 
         <!--
-            ScreenStateReceiver is NOT declared here with an intent-filter:
-            ACTION_SCREEN_ON/OFF are only delivered to receivers registered
-            at runtime (an OS battery restriction), so it's registered
-            dynamically in AodForegroundService.onCreate instead.
+            ScreenStateReceiver and ChargeReceiver are NOT declared here
+            with an intent-filter: ACTION_SCREEN_OFF and
+            ACTION_POWER_CONNECTED are implicit broadcasts that Android 8+
+            only delivers to receivers registered at runtime, so both are
+            registered dynamically in AodForegroundService.onCreate instead.
         -->
 
+        <!--
+            MY_PACKAGE_REPLACED: an app update kills the service, so restart
+            it then too, not just on boot.
+        -->
         <receiver
             android:name=".BootReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-
-        <!--
-            ACTION_POWER_CONNECTED/DISCONNECTED ARE delivered to
-            manifest-declared receivers (unlike SCREEN_ON/OFF), so unlike
-            ScreenStateReceiver this one doesn't need the foreground
-            service to stay registered.
-        -->
-        <receiver
-            android:name=".ChargeReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
 
